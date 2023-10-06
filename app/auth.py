@@ -43,6 +43,7 @@ async def create_user(db: db_dependency, request: CreateUserRequest):
                               hashed_password=bcrypt_context.hash(request.password))
     db.add(user_model)
     db.commit()
+    return user_model.document_number
 
 @router.post("/token", response_model=Token)
 async def get_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: db_dependency):
