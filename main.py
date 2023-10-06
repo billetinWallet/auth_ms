@@ -1,11 +1,9 @@
 from fastapi import FastAPI, status, Depends, HTTPException
 
-import auth
-from database import engine, SessionLocal
+from app import auth, models
+from app.database import engine, SessionLocal
 from typing import Annotated
 from sqlalchemy.orm import Session
-import models
-
 
 auth_ms = FastAPI()
 auth_ms.include_router(auth.router)
