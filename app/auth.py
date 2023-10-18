@@ -9,6 +9,7 @@ from app.models import Users
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import jwt, JWTError
+from app import database
 
 
 router = APIRouter(
@@ -30,20 +31,16 @@ class Token(BaseModel):
     access_token: str
     token_type: str
 
-def get_db():
-    db = SessionLocal()
-    try: yield db
-    finally: db.close()
 
-db_dependency = Annotated[Session, Depends(get_db)]
+get_db = database.get_db
 
 @router.get("/users", status_code=status.HTTP_200_OK)
-async def get_users(db: db_dependency):
+async def get_users(db: Session = Depends(get_db)):
     users = db.query(Users).all()
     return users
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-async def create_user(db: db_dependency, request: CreateUserRequest):
+async def create_user(request: CreateUserRequest, db: Session = Depends(get_db)):
     user_model = Users(document_number=request.document_number,
                               hashed_password=bcrypt_context.hash(request.password))
     db.add(user_model)
@@ -51,7 +48,7 @@ async def create_user(db: db_dependency, request: CreateUserRequest):
     return user_model.document_number
 
 @router.post("/token", response_model=Token)
-async def get_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: db_dependency):
+async def get_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: Session = Depends(get_db)):
     user = authenticate_user(form_data.username, form_data.password, db)
     if not user: raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Validation failed")
     token = create_access_token(user.id, timedelta(minutes=10))
