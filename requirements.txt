@@ -6,3 +6,4 @@ python-jose[cryptography]
 bcrypt
 uvicorn
 python-multipart
+psycopg2
