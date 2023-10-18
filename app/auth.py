@@ -37,6 +37,11 @@ def get_db():
 
 db_dependency = Annotated[Session, Depends(get_db)]
 
+@router.get("/users", status_code=status.HTTP_200_OK)
+async def get_users(db: db_dependency):
+    users = db.query(Users).all()
+    return users
+
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_user(db: db_dependency, request: CreateUserRequest):
     user_model = Users(document_number=request.document_number,
